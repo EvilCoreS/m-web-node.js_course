@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button class="Minus" onclick="test(document.querySelector('.Minus').innerHTML)">minus</button>
+<button class="Plus" onclick="test(document.querySelector('.Plus').innerHTML)">plus</button>
+<button onclick="confirmed()">Confirm</button>
+<div class="result"></div>
+<script src="test.js"></script>
+<script>
+  function confirmed(){
+    fetch('http://localhost:3005/test').then(data => data.json()).then(data => {
+        document.querySelector('.result').innerHTML = `Plus pressed: ${data.plus}, Minus pressed: ${data.minus}`
+    })
+  }
+</script>
+</body>
+</html>
