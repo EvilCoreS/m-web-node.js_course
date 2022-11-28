@@ -141,10 +141,35 @@ export default class SqlManager {
             .split(';\n')
         const response = await db.promise().execute(sql[0])
         const data = (response as RowDataPacket[])[0]
-        console.log(data);
         for (let i = 0; i < data.length; i++) {
             await db.promise().execute(sql[1], [data[i]['id']])
         }
         return {ok: true}
+    }
+
+    async searchAuthor(text: string) {
+        const sql = fs.readFileSync('./config/db/sqlFiles/searchAuthor.sql')
+            .toString()
+            .split(';\n')
+        let response = (await db.promise().execute(sql[1], [`%${text}%`])) as RowDataPacket[]
+        if (response[0].length > 0) {
+            for (let i = 0; i < response[0].length; i++) {
+                const id = ((await db.promise().execute(sql[2], [response[0][i]['id']])) as RowDataPacket[])[0][0]['booksID']
+                const book = ((await db.promise().execute(sql[3], [id])) as RowDataPacket[])[0]
+                Object.assign(response[0][i], book[0])
+            }
+        }
+        else {
+            response = (await db.promise().execute(sql[0], [`%${text}%`, `%${text}%`])) as RowDataPacket[]
+            if (response[0].length > 0) {
+                for (let i = 0; i < response[0].length; i++) {
+                    const id = ((await db.promise().execute(sql[4], [response[0][i]['id']])) as RowDataPacket[])[0][0]['authorID']
+                    const author = ((await db.promise().execute(sql[5], [id])) as RowDataPacket[])[0]
+                    Object.assign(response[0][i], author[0])
+                }
+            }
+            else return []
+        }
+        return response[0]
     }
 }

@@ -18,7 +18,7 @@ export default class BooksServices {
     }
 
     async searchBook(text: string) {
-        const data = await sql.searchText(text)
+        const data = process.env['VERSION'] === '1' ? await sql.searchText(text) : await sql.searchAuthor(text)
         return {
             booksArray: data,
             lastPage: 1,
