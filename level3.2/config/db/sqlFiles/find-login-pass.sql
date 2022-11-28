@@ -1,0 +1,1 @@
+SELECT * FROM admin WHERE login = ? AND pass = ?

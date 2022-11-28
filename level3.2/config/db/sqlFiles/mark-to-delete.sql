@@ -1,0 +1,1 @@
+UPDATE books SET toDelete = IF(toDelete = 1, 0, 1) WHERE id = ?

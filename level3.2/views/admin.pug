@@ -1,0 +1,138 @@
+doctype html
+html(lang='ru')
+    head
+        meta(charset='utf-8')
+        title admin page
+        link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css', rel='stylesheet', integrity='sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi', crossorigin='anonymous')
+    body
+        -let version = obj['version']
+        -let str = obj['version'] === 1 ? '' : 'router?action=', strToBooks = 'router?action=books', strPage = str ? '/router?action=page&' : '?'
+            input#version(type='text' hidden value=version)
+            input#str(type='text' hidden value=str)
+            .main-page
+                .container
+                    header.d-flex.flex-wrap.justify-content-center.py-3.mb-4.border-bottom
+                        a.d-flex.align-items-center.mb-3.mb-md-0.me-md-auto.text-dark.text-decoration-none(href=`/api/v${version}/${str ? strToBooks : str}`)
+                            span.fs-4 Library++
+                        form(action=`http://localhost:3000/admin/api/v${version}/${str}logout` method='POST')
+                            input.btn.btn-primary(type="submit" value='Exit')
+                .container.text-center
+                    .row
+                        .col
+                            table.table
+                                thead
+                                    tr
+                                        th(scope='col') id
+                                        th(scope='col') Author
+                                        th(scope='col') Name
+                                        th(scope='col') Year
+                                        th(scope='col') Clicks
+                                        th(scope='col') Views
+                                        th(scope='col') Action
+                                tbody
+                                    each val in obj.booksArray
+                                        tr
+                                            th(scope='row')=val["id"]
+                                            td=val['author']
+                                            td=val['name']
+                                            td=val['year']
+                                            td=val['clicks']
+                                            td=val['views']
+                                            td
+                                                button(id=val["id"] onclick='deleteBook(this)').btn.btn-primary=`${val['toDelete'] === 1? 'un' : ''}delete`
+
+                            hr.my-4
+                            nav(aria-label='Page navigation example')
+                                ul.pagination
+                                    li.page-item
+                                        a.page-link(href=`http://localhost:3000/admin/api/v${version}${strPage}page=1`, aria-label='Previous')
+                                            span(aria-hidden='true') &laquo;
+                                    if obj['currentPage'] === '1'
+                                        -let i = 1, temp = Number(obj['lastPage'])
+                                            while i < temp+1 && i <= 3
+                                                li.page-item
+                                                    a.page-link(href=`http://localhost:3000/admin/api/v${version}${strPage}page=${i}`)=i++
+                                    else if obj['currentPage'] === obj['lastPage']
+                                        -let i = 1, k = 0, temp = Number(obj['lastPage'])
+                                            while temp+i > 0 && k < 3
+                                                - i--
+                                                - k++
+                                            while i <= 0
+                                                if temp+i !== 0
+                                                    li.page-item
+                                                        a.page-link(href=`http://localhost:3000/admin/api/v${version}${strPage}page=${temp+i}`)=temp+i
+                                                - i++
+                                    else if Number(obj['currentPage']) > 1 && Number(obj['currentPage']) <= Number(obj['lastPage'])
+                                        -let i = -1, temp = Number(obj['currentPage'])
+                                            while i <= 1
+                                                li.page-item
+                                                    a.page-link(href=`http://localhost:3000/admin/api/v${version}${strPage}page=${temp+i}`)=temp+i
+                                                -i++
+                                    li.page-item
+                                        a.page-link(href=`http://localhost:3000/admin/api/v${version}${strPage}page=${obj.lastPage}`, aria-label='Next')
+                                            span(aria-hidden='true') &raquo;
+                        .col
+                            #main-form.row.g-3
+                                .col-md-12
+                                    input#inputEmail4.form-control.input-require(type='text', placeholder='name' name='name')
+                                .col-12
+                                    input#inputAddress.form-control.input-require(type='text', placeholder='author' name='author')
+                                .col-md-6
+                                    input#inputAddress2.form-control.input-require(type='text', placeholder='isbn' name='isbn')
+                                .col-md-6
+                                    input#inputFile.form-control(type='file' name='file')
+                                .col-md-6
+                                    textarea#inputCity.form-control.input-require(placeholder='description' name='description')
+                                .col-md-2
+                                    input#inputZip.form-control.input-require(type='text', placeholder='year' name='year')
+                                .col-md-2
+                                    input#inputPassword4.form-control.input-require(type='text', placeholder='pages' name='pages')
+                                hr.my-4
+                                .col-12
+                                    input.btn.btn-primary(type='submit' value='Confirm' onclick='createBook()')
+            script.
+                const version = document.querySelector('#version').value
+                console.log(version);
+                const str = document.querySelector('#str').value
+                const temp = `http://localhost:3000/admin/api/v${version}/${str}delete`
+                console.log(temp);
+                const strToCreate = str ? '/router?action=create' : ''
+                async function createBook() {
+                    const data = document.querySelectorAll('.input-require')
+                    const arr = ['name', 'author', 'isbn', 'description', 'year', 'pages']
+                    const obj = {}
+                    for (let i = 0; i < data.length; i++) {
+                        obj[arr[i]] = data[i].value
+                    }
+                    await fetch(`http://localhost:3000/admin/api/v${version}${strToCreate}`, {
+                        method: "POST",
+                        body: JSON.stringify(obj),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    await uploadImage()
+                    window.location.reload()
+                }
+                async function uploadImage() {
+                    const file = document.querySelector('#inputFile').files[0]
+                    const formData = new FormData()
+                    formData.append('user-file', file, 'user-file.jpg')
+                    await fetch(`http://localhost:3000/admin/api/v${version}/${str}upload`, {
+                        method: "POST",
+                        body: formData
+                    })
+                }
+                async function deleteBook(elem){
+                    console.log(elem.id);
+                    await fetch(`http://localhost:3000/admin/api/v${version}/${str}delete`, {
+                        method: version === '1' ? 'DELETE' : 'POST',
+                        body: JSON.stringify({id: elem.id}),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    window.location.reload()
+                }
+            script(src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js', integrity='sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3', crossorigin='anonymous')
+            script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js', integrity='sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk', crossorigin='anonymous')

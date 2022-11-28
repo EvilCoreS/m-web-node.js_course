@@ -1,0 +1,1 @@
+DELETE FROM books WHERE toDelete = 1

@@ -1,0 +1,1 @@
+SELECT isbusy FROM books WHERE id = ?

@@ -1,0 +1,9 @@
+Form for run app.ts with nodemon in WebStorm:
+
+Node parameters:        /usr/bin/nodemon -r dotenv/config
+Working directory:      *path*/level3.2
+JavaScript file:        app.ts
+Application parameters: dotenv_config_path=./.env
+
+Terminal:
+*path*/level3.2/ $ nodemon -r dotenv/config app.ts dotenv_config_path=./.env

@@ -1,0 +1,1 @@
+SELECT id, author FROM authors, books_authors WHERE id = books_authors.authorID AND books_authors.booksID = ?
